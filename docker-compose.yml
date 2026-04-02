@@ -1,0 +1,94 @@
+
+services:
+
+  mongo:
+    image: mongo:6.0
+    container_name: webflux_mongo
+    restart: unless-stopped
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      APP_MONGO_USER: ${APP_MONGO_USER}
+      APP_MONGO_PASSWORD: ${APP_MONGO_PASSWORD}
+
+    volumes:
+      - ./data/mongo:/data/db
+      - ./docker/mongo-init/init.js:/docker-entrypoint-initdb.d/init.js:ro
+
+    # HOST:27018 -> CONTAINER:27017
+    ports:
+      - "${MONGO_EXTERNAL_PORT}:27017"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--username",
+          "${MONGO_INITDB_ROOT_USERNAME}",
+          "--password",
+          "${MONGO_INITDB_ROOT_PASSWORD}",
+          "--authenticationDatabase",
+          "admin",
+          "--eval",
+          "db.adminCommand('ping')"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+    networks:
+      - webflux_network
+
+
+  app:
+    image: maven:3.9.6-eclipse-temurin-17
+    container_name: webflux_app
+    working_dir: /workspace
+    restart: unless-stopped
+
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+    env_file:
+      - .env
+
+    environment:
+      SPRING_DATA_MONGODB_URI: ${SPRING_DATA_MONGODB_URI}
+      SERVER_PORT: ${APP_PORT}
+
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+
+    volumes:
+      - ./:/workspace
+      - m2_repo:/root/.m2
+
+    command: >
+      sh -c "
+      echo 'Mongo saudável. Buildando aplicação...' &&
+      mvn -B -DskipTests package &&
+      java -jar target/*.jar
+      "
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    networks:
+      - webflux_network
+
+
+networks:
+  webflux_network:
+    driver: bridge
+
+volumes:
+  m2_repo:

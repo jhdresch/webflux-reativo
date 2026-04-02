@@ -1,0 +1,145 @@
+# =========================
+# Java / JVM
+# =========================
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# =========================
+# Build / Dependency dirs
+# =========================
+# Maven
+/target/
+!/.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+/.gradle/
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Gradle wrapper jar placed by some setups
+gradle-wrapper.jar
+
+# =========================
+# IDEs / Editors
+# =========================
+# IntelliJ IDEA
+/.idea/
+*.iml
+*.iws
+*.ipr
+.idea/*
+# keep project-level files if you want: !.idea/inspectionProfiles
+
+# VS Code
+.vscode/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+nbdist/
+
+# =========================
+# Logs and runtime files
+# =========================
+*.log
+logs/
+hs_err_pid*
+replay_pid*
+*.pid
+
+# =========================
+# Test reports / Coverage
+# =========================
+/target/surefire-reports/
+/target/failsafe-reports/
+/surefire-reports/
+/failsafe-reports/
+TEST-*.xml
+jacoco.exec
+coverage/
+coverage.ec
+
+# =========================
+# Generated files
+# =========================
+/generated-sources/
+/generated/
+/out/
+
+# =========================
+# OS Files
+# =========================
+# macOS
+.DS_Store
+.AppleDouble
+._*
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+*.secret
+secrets.yml
+credentials.yml
+application-local.yml
+# Java keystores and keys
+*.jks
+*.keystore
+*.p12
+*.pem
+
+# =========================
+# Docker / Containers
+# =========================
+docker-compose.override.yml
+.docker/
+
+# =========================
+# Node / Frontend artifacts (if present)
+# =========================
+node_modules/
+/dist/
+.npm/
+
+# Caches
+.cache/
+
+# Backup / swap files
+*~
+*~.*
+*.swp
+*.swo
+
+# Keep the gitignore itself
+!.gitignore
+
+# =========================
+# MongoDB data files (local development)
+# =========================
+# Ignore the local data directory used by docker-compose bind mount
+/data/mongo/
+
+# Common MongoDB storage files (in case other paths are used)
+*.wt
+WiredTiger*
+storage.bson
+mongod.lock
+
+

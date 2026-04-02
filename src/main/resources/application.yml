@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: webflux-reativo
+
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/webflux-reativo}
+      auto-index-creation: true
+
+server:
+  port: ${SERVER_PORT:8092}
+
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    org.mongodb.driver: INFO
+    org.mongodb.driver.connection: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+  endpoint:
+    health:
+      show-details: always

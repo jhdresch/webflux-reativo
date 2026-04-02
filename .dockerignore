@@ -1,0 +1,12 @@
+target/
+.mvn/
+.idea/
+*.iml
+.classpath
+.project
+node_modules/
+/.vscode/
+docker-compose.yml
+.env
+**/src/test
+**/src/test/**
