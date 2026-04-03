@@ -252,3 +252,67 @@ Este projeto é um tutorial — adapte conforme necessário.
 
 Se quiser, eu gero também um `README.md` em inglês, ou adiciono um `docker-compose.override.yml` que usa a porta interna 27018 do container conforme discutido anteriormente. Quer que eu gere esses itens adicionais agora? 
 
+Conceitos reativos presentes no projeto
+--------------------------------------
+
+Este projeto foi pensado como um tutorial e contém (e demonstra) os principais conceitos reativos listados abaixo. A seguir explico cada conceito, como ele aparece no código e onde encontrá-lo.
+
+1) Mono vs Flux
+- Mono<T> representa 0..1 elemento; Flux<T> representa 0..N elementos.
+- Onde no projeto:
+  - `UserController.create` recebe `Mono<UserRequest>` e retorna `Mono<ResponseEntity<UserResponse>>` (fluxo de 0..1) — veja `src/main/java/com/br/webfluxreativo/controller/UserController.java` linhas ~49-56.
+  - `UserController.getAll` retorna `Flux<UserResponse>` obtido diretamente de `service.findAll()` (0..N) — linhas ~35-39.
+  - `UserService` usa `Mono` e `Flux` em seus métodos (`findAll(): Flux`, `create(): Mono`, etc.) — `src/main/java/com/br/webfluxreativo/service/UserService.java`.
+
+2) Backpressure
+- Backpressure é a forma de controlar o fluxo quando o consumidor não consegue processar os dados tão rápido quanto o produtor. Reactor suporta operadores de controle de demanda (request) e operadores como `onBackpressureBuffer`, `onBackpressureDrop`, e `limitRate`.
+- Onde no projeto:
+  - O exemplo básico não contém um pipeline explícito de backpressure (por simplicidade), mas como o `Flux` é consumido reativamente pelo servidor (Netty) e pelos clientes reativos, a infraestrutura respeita sinais de demanda.
+  - Para demonstrar na prática, você pode alterar `UserController.getAll()` para aplicar `limitRate` ou `onBackpressureBuffer` sobre o `Flux` retornado:
+
+```java
+// exemplo: limitar a taxa para consumo de 10 elementos por vez
+return service.findAll().limitRate(10);
+```
+
+3) Reactive Streams
+- Reactive Streams é a especificação (Publisher, Subscriber, Subscription, Processor) adotada pelo Reactor e implementada pelo Spring WebFlux.
+- Onde no projeto:
+  - `Flux` e `Mono` são implementações do `org.reactivestreams.Publisher` usadas em controllers, services e repositórios. O `ReactiveMongoRepository` retorna publishers reativos que obedecem ao contrato (demand/signals).
+
+4) Non-blocking I/O
+- Spring WebFlux, por padrão, usa o servidor Netty (não-bloqueante) quando detectado no classpath. Isso permite que poucas threads (event loop) sirvam muitas conexões, desde que não ocorram operações bloqueantes dentro das pipelines.
+- Onde no projeto:
+  - A aplicação é reativa end-to-end: controllers usam tipos reativos, service e repository também. Evite chamadas síncronas (bloqueantes) dentro dos métodos do `Service` (por exemplo, não chame APIs HTTP com clientes bloqueantes ou DBs não reativos sem `.subscribeOn(Schedulers.boundedElastic())`).
+
+5) Integração com MongoDB Reativo
+- Usamos `ReactiveMongoRepository<UserEntity, String>` (`UserRepository`) que retorna `Flux`/`Mono` e funciona com o driver reativo do MongoDB.
+- Onde no projeto:
+  - `src/main/java/com/br/webfluxreativo/repository/UserRepository.java`
+  - `src/main/java/com/br/webfluxreativo/entity/UserEntity.java`
+  - As operações `repository.findAll()`, `repository.save(...)`, `repository.findById(...)` são reativas e não bloqueantes.
+
+6) Fluxo assíncrono de ponta a ponta
+- O projeto demonstra um fluxo assíncrono completo:
+  - Cliente HTTP → Controller (recebe Mono/Flux) → Service (transformações, validações) → Repository (operações reativas no Mongo) → Controller (mapeia para ResponseEntity) → Cliente.
+- Exemplo de fluxo (criar um usuário):
+
+```text
+Cliente POST /users (JSON) --> Controller recebe Mono<UserRequest>
+  flatMap para service.create(UserRequest) --> Service converte DTO para entidade
+  repository.save(entity) retorna Mono<UserEntity>
+  map para UserResponse --> ResponseEntity criado e retornado
+```
+
+Onde ver no código:
+  - Controller: `src/main/java/com/br/webfluxreativo/controller/UserController.java`
+  - Service: `src/main/java/com/br/webfluxreativo/service/UserService.java`
+  - Repository: `src/main/java/com/br/webfluxreativo/repository/UserRepository.java`
+
+Dicas práticas para experimentar estes conceitos
+- Teste Mono vs Flux: crie endpoints de streaming (Server-Sent Events) ou retorne grandes listas via `Flux` e experimente `limitRate`/`onBackpressureBuffer`.
+- Simule backpressure usando um cliente que procesa lentamente (ex.: um consumidor que lê com delays) e observe a taxa de emissão.
+- Garanta que nenhuma operação bloqueante seja chamada no pipeline reativo; se necessário, isole chamadas bloqueantes em `Schedulers.boundedElastic()`.
+
+Se quiser, eu adiciono exemplos práticos (pequenas alterações no código) que demonstram backpressure ativo e um endpoint streaming (SSE) para ver o comportamento em tempo real. Quer que eu implemente isso no projeto agora? 
+
