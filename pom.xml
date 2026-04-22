@@ -46,6 +46,18 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
 
+        <!-- Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Spring Data Elasticsearch -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+        </dependency>
+
         <!-- Reactive MongoDB -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -89,6 +101,14 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Embedded Mongo for tests (Flapdoodle) -->
+        <dependency>
+            <groupId>de.flapdoodle.embed</groupId>
+            <artifactId>de.flapdoodle.embed.mongo</artifactId>
+            <version>4.9.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -144,6 +164,8 @@
                     <mainClass>com.br.webfluxreativo.WebfluxReativoApplication</mainClass>
                 </configuration>
             </plugin>
+
+            <!-- ...other plugins... -->
 
         </plugins>
     </build>

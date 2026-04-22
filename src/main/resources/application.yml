@@ -7,6 +7,14 @@ spring:
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/webflux-reativo}
       auto-index-creation: true
 
+  elasticsearch:
+    uris: ${SPRING_ELASTICSEARCH_URI:http://localhost:9200}
+    connection-timeout: 1000
+    socket-timeout: 30000
+    # If your Elasticsearch requires authentication, set username/password via env or spring config
+    # username: ${ELASTIC_USERNAME:}
+    # password: ${ELASTIC_PASSWORD:}
+
 server:
   port: ${SERVER_PORT:8092}
 
@@ -20,8 +28,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus
 
   endpoint:
     health:
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState
+      probes:
+        enabled: true
       show-details: always

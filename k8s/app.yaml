@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webflux-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webflux-app
+  template:
+    metadata:
+      labels:
+        app: webflux-app
+    spec:
+      containers:
+        - name: app
+          image: webflux-app:latest # Nome que você usará no docker build
+          imagePullPolicy: Never    # Importante para usar imagem local do Minikube
+          ports:
+            - containerPort: 8091
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: webflux-config
+                  key: SPRING_DATA_MONGODB_URI
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: webflux-config
+                  key: APP_PORT
+          # Probes baseados no seu Actuator (configurado no application.yml)
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8091
+            initialDelaySeconds: 40
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8091
+            initialDelaySeconds: 40
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webflux-service
+spec:
+  type: NodePort
+  selector:
+    app: webflux-app
+  ports:
+    - port: 8091
+      targetPort: 8091
+      nodePort: 30091 # Porta para acessar via IP do Minikube

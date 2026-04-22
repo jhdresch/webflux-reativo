@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: webflux-app
+  tag: "latest"
+  pullPolicy: Never
+
+service:
+  type: NodePort
+  port: 8091
+  nodePort: 30091
+
+resources: {}
+
+env:
+  SPRING_DATA_MONGODB_URI: "mongodb://appuser:apppassword@mongo:27018/appdb?authSource=admin"
+  APP_PORT: "8091"
+
+

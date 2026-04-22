@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webflux-config
+data:
+  APP_PORT: "8091"
+  SPRING_DATA_MONGODB_URI: "mongodb://appuser:apppassword@mongo-service:27017/webflux_reativo?authSource=admin"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-secret
+type: Opaque
+stringData:
+  ROOT_USERNAME: "rootadmin"
+  ROOT_PASSWORD: "rootpassword123"
+  APP_USER: "appuser"
+  APP_PASSWORD: "apppassword"
+  DB_NAME: "webflux_reativo"
